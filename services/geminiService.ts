@@ -2,11 +2,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { VitalsData, PredictionResult } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.warn("VITE_GEMINI_API_KEY is not set. AI features will fail.");
+}
+
+const ai = new GoogleGenAI({ apiKey: apiKey || "MISSING_KEY" });
 
 export const getClinicalInsight = async (vitals: VitalsData, prediction: PredictionResult) => {
   const model = "gemini-3-pro-preview";
-  
+
   const prompt = `
     Analyze the following patient vitals and Logistic Regression risk assessment:
     - Age: ${vitals.age}
@@ -31,11 +37,11 @@ export const getClinicalInsight = async (vitals: VitalsData, prediction: Predict
         type: Type.OBJECT,
         properties: {
           summary: { type: Type.STRING },
-          riskFactors: { 
+          riskFactors: {
             type: Type.ARRAY,
             items: { type: Type.STRING }
           },
-          recommendations: { 
+          recommendations: {
             type: Type.ARRAY,
             items: { type: Type.STRING }
           }
